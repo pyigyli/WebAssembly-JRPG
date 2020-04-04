@@ -4,6 +4,7 @@ use crate::game::battle::enemy::Enemy;
 use crate::game::menu::container::MenuContainer;
 use crate::game::menu::item::{MenuItem, OnClickEvent};
 use crate::game::menu::MenuScreen;
+use crate::game::menu::notification::Notification;
 
 pub fn none_menu() -> MenuScreen {
   MenuScreen::new(Vec::new(), Vec::new(), Vec::new(), 0, 0, OnClickEvent::None)
@@ -29,17 +30,24 @@ pub fn single_target_targeting_everyone(party: &Vec<Character>, enemies: &mut Ve
 }
 
 fn push_party_to_selectables(selectables: &mut Vec<Vec<MenuItem>>, party: &Vec<Character>, action_effects: ActionTuple) {
-  let perform_battle_action = |party: &mut Vec<Character>, _enemies: &mut Vec<Vec<Enemy>>, target_ids: Vec<usize>, action_effects: ActionTuple| {
+  let perform_battle_action = |
+    party: &mut Vec<Character>,
+    _enemies: &mut Vec<Vec<Enemy>>,
+    target_ids: Vec<usize>,
+    action_effects: ActionTuple,
+    notification: &mut Notification
+  | {
     let acting_character = party.iter_mut().find(|character: &&mut Character| character.get_battle_state().is_turn_active()).unwrap();
     acting_character.perform_battle_action();
 
-    let incoming_damage = action_effects.0(acting_character.get_battle_state_mut());
+    let incoming_damage = action_effects.0(acting_character.get_battle_state_mut(), notification);
     for character in party.iter_mut() {
       if target_ids.contains(&character.get_id()) {
         character.receive_battle_action(action_effects.1, incoming_damage);
       }
     }
   };
+
   for (index, character) in party.iter().enumerate() {
     let (x, y) = character.get_coords();
     selectables[index].push(MenuItem::new(String::new(), x, y, OnClickEvent::BattleAction(perform_battle_action, vec![character.get_id()], action_effects)));
@@ -47,16 +55,23 @@ fn push_party_to_selectables(selectables: &mut Vec<Vec<MenuItem>>, party: &Vec<C
 }
 
 fn push_enemies_to_selectables(selectables: &mut Vec<Vec<MenuItem>>, enemies: &Vec<Vec<Enemy>>, action_effects: ActionTuple) {
-  let perform_battle_action = |party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, target_ids: Vec<usize>, action_effects: ActionTuple| {
+  let perform_battle_action = |
+    party: &mut Vec<Character>,
+    enemies: &mut Vec<Vec<Enemy>>,
+    target_ids: Vec<usize>,
+    action_effects: ActionTuple,
+    notification: &mut Notification
+  | {
     let acting_character = party.iter_mut().find(|character: &&mut Character| character.get_battle_state().is_turn_active()).unwrap();
     acting_character.perform_battle_action();
 
     for enemy in enemies.iter_mut().flatten() {
       if target_ids.contains(&enemy.get_id()) {
-        enemy.receive_battle_action(action_effects.1, action_effects.0(acting_character.get_battle_state_mut()));
+        enemy.receive_battle_action(action_effects.1, action_effects.0(acting_character.get_battle_state_mut(), notification));
       }
     }
   };
+
   for (j, enemy_row) in enemies.iter().enumerate() {
     for (i, enemy) in enemy_row.iter().enumerate() {
       selectables[j].push(MenuItem::new(

@@ -3,14 +3,18 @@ use crate::game::animation::enemy::EnemyAnimation;
 use crate::game::battle::character::Character;
 use crate::game::battle::print_damage::PrintDamage;
 use crate::game::battle::state::BattleState;
+use crate::game::menu::notification::Notification;
+use crate::webgl::audio::Audio;
 use crate::webgl::shader_program::ShaderProgram;
+
+pub type BattleScript = for<'a, 'b, 'c> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>, &'c mut Notification);
 
 pub struct Enemy {
   animation: EnemyAnimation,
   name: String,
   id: usize,
   state: BattleState,
-  battle_script: for<'a, 'b> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>)
+  battle_script: BattleScript
 }
 
 impl Enemy {
@@ -27,7 +31,7 @@ impl Enemy {
     int: f64,
     res: f64,
     agi: f64,
-    battle_script: for<'a, 'b> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>)
+    battle_script: BattleScript
   ) -> Self {
     Self {
       animation: EnemyAnimation::new(sprite_key),
@@ -38,7 +42,7 @@ impl Enemy {
     }
   }
 
-  pub fn update(&mut self, x: f32, y: f32, print_damage: &mut PrintDamage) -> u8 {
+  pub fn update(&mut self, audio: &mut Audio, x: f32, y: f32, print_damage: &mut PrintDamage) -> u8 {
     self.state.update();
     if self.animation.is_currently_animating() {
       let animation_done = self.animation.advance_animation();
@@ -61,6 +65,7 @@ impl Enemy {
             if self.animation.get_frames_remaining() == 20 {
               action(self.get_battle_state_mut(), incoming_damage);
               print_damage.set(incoming_damage, x - 16., y + 32., [1.; 3]);
+              audio.play_sfx("physical_hit");
             }
           },
           _ => ()
@@ -99,7 +104,7 @@ impl Enemy {
     &mut self.state
   }
 
-  pub fn get_battle_script(&self) -> for<'a, 'b> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>) {
+  pub fn get_battle_script(&self) -> BattleScript {
     self.battle_script
   }
   

@@ -1,24 +1,29 @@
+use crate::game::battle::ActionTuple;
 use crate::game::battle::character::Character;
 use crate::game::battle::enemy::Enemy;
-use crate::game::battle::state::BattleState;
 use crate::game::data::battle_menus;
 use crate::game::menu::font::print_text;
 use crate::game::menu::MenuScreen;
+use crate::game::menu::notification::Notification;
 use crate::game::transition::Transition;
 use crate::webgl::shader_program::ShaderProgram;
-
-type ActionTuple = (for<'a> fn(&'a mut BattleState) -> f64, for<'a> fn(&'a mut BattleState, f64));
 
 pub enum OnClickEvent {
   MenuTransition(for<'a> fn(&'a mut Transition)),
   SetBattleMenu(for<'a> fn(&'a Character) -> MenuScreen),
   ToTargetSelection(for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
-  BattleAction(for<'a, 'b> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>, Vec<usize>, ActionTuple), Vec<usize>, ActionTuple),
+  BattleAction(for<'a, 'b, 'c> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>, Vec<usize>, ActionTuple, &'c mut Notification), Vec<usize>, ActionTuple),
   ChangeScene(for<'a> fn(&'a mut Transition)),
   None
 }
 
-pub fn match_click_event(event: &OnClickEvent, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition) -> Option<MenuScreen> {
+pub fn match_click_event
+  (event: &OnClickEvent,
+  party: &mut Vec<Character>,
+  enemies: &mut Vec<Vec<Enemy>>,
+  transition: &mut Transition,
+  notification: &mut Notification
+) -> Option<MenuScreen> {
   match event {
     OnClickEvent::MenuTransition(to_new_menu) => to_new_menu(transition),
     OnClickEvent::SetBattleMenu(new_battle_menu) => {
@@ -26,7 +31,7 @@ pub fn match_click_event(event: &OnClickEvent, party: &mut Vec<Character>, enemi
     },
     OnClickEvent::ToTargetSelection(to_target_selection, action_effects) => return Some(to_target_selection(party, enemies, *action_effects)),
     OnClickEvent::BattleAction(action, target_ids, action_effects) => {
-      action(party, enemies, target_ids.to_vec(), *action_effects);
+      action(party, enemies, target_ids.to_vec(), *action_effects, notification);
       return Some(battle_menus::none_menu());
     },
     OnClickEvent::ChangeScene(to_new_map) => to_new_map(transition),
@@ -52,8 +57,8 @@ impl MenuItem {
     }
   }
 
-  pub fn click_item(&self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition) -> Option<MenuScreen> {
-    match_click_event(&self.on_click, party, enemies, transition)
+  pub fn click_item(&self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition, notification: &mut Notification) -> Option<MenuScreen> {
+    match_click_event(&self.on_click, party, enemies, transition, notification)
   }
 
   pub fn get_coords(&self) -> (f32, f32) {

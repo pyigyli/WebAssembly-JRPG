@@ -22,7 +22,7 @@ pub struct GameState {
   map: Map,
   player: Player,
   party: Vec<Character>,
-  reserves: Vec<Character>,
+  _reserves: Vec<Character>,
   battle: Battle,
   notification: Notification,
   textbox: Textbox,
@@ -38,7 +38,7 @@ impl GameState {
       map: data::maps::none_map(&mut player),
       player,
       party: vec![data::characters::darrel_deen(1), data::characters::nurse_seraphine(2), data::characters::darrel_deen(3), data::characters::nurse_seraphine(4)],
-      reserves: Vec::new(),
+      _reserves: Vec::new(),
       battle: Battle::new(),
       notification: Notification::new(),
       textbox: Textbox::new(),
@@ -51,10 +51,10 @@ impl GameState {
       self.transition.update(&mut self.map, &mut self.player, &mut self.battle, &mut self.menu);
 
     } else if self.menu.is_open() {
-      self.menu.update(&mut self.party, self.battle.get_enemies(), &mut self.transition);
+      self.menu.update(&mut self.party, self.battle.get_enemies(), &mut self.transition, &mut self.notification);
 
     } else if self.battle.in_battle() {
-      self.battle.update(&mut self.party, &mut self.transition);
+      self.battle.update(audio, &mut self.party, &mut self.transition, &mut self.notification);
 
     } else if is_down("f") {
       self.transition.set(TransitionStyle::MenuIn(data::menus::main_menu));
@@ -64,7 +64,7 @@ impl GameState {
 
     } else {
       self.player.update(&mut self.map, &mut self.party, &mut self.battle, &mut self.transition, &mut self.textbox);
-      self.map.update();
+      self.map.update(audio);
     }
     self.notification.update();
   }

@@ -7,7 +7,10 @@ use crate::game::battle::state::BattleState;
 use crate::game::data::battle_menus;
 use crate::game::menu::item::{MenuItem, OnClickEvent};
 use crate::game::menu::MenuScreen;
+use crate::webgl::audio::Audio;
 use crate::webgl::shader_program::ShaderProgram;
+
+type AbilityTuple = (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple);
 
 pub struct Character {
   animation: CharacterAnimation,
@@ -16,9 +19,9 @@ pub struct Character {
   x: f32,
   y: f32,
   state: BattleState,
-  attack_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
-  primary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
-  secondary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple)
+  attack_ability: AbilityTuple,
+  primary_ability: AbilityTuple,
+  secondary_ability: AbilityTuple
 }
 
 impl Character {
@@ -35,9 +38,9 @@ impl Character {
     int: f64, int_growth_rate: f32,
     res: f64, res_growth_rate: f32,
     agi: f64, agi_growth_rate: f32,
-    attack_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
-    primary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
-    secondary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple)
+    attack_ability: AbilityTuple,
+    primary_ability: AbilityTuple,
+    secondary_ability: AbilityTuple
   ) -> Self {
     Self {
       animation: CharacterAnimation::new(sprite_folder),
@@ -62,7 +65,7 @@ impl Character {
     }
   }
 
-  pub fn update(&mut self, battle_menu: &mut MenuScreen, print_damage: &mut PrintDamage) -> bool {
+  pub fn update(&mut self, audio: &mut Audio, battle_menu: &mut MenuScreen, print_damage: &mut PrintDamage) -> bool {
     self.state.update();
     if self.animation.is_currently_animating() {
       let animation_done = self.animation.advance_animation();
@@ -73,7 +76,9 @@ impl Character {
             self.get_battle_state_mut().end_turn();
             return true;
           },
-          Animation::Attack | Animation::HurtSelf(_, _) => self.animation.start_animation(Animation::EndTurn),
+          Animation::Attack | Animation::HurtSelf(_, _) => {
+            self.animation.start_animation(Animation::EndTurn);
+          },
           _ => ()
         }
       } else {
@@ -89,6 +94,7 @@ impl Character {
             if self.animation.get_frames_remaining() == 20 {
               action(self.get_battle_state_mut(), incoming_damage);
               print_damage.set(incoming_damage, self.x + 32., self.y + 32., [1.; 3]);
+              audio.play_sfx("physical_hit");
             }
           },
           _ => ()

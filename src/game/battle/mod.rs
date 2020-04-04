@@ -4,19 +4,22 @@ pub mod state;
 pub mod print_damage;
 
 use character::Character;
-use enemy::Enemy;
+use enemy::{BattleScript, Enemy};
 use print_damage::PrintDamage;
 use state::BattleState;
 
 use crate::game::data::battle_menus;
 use crate::game::menu::container::MenuContainer;
 use crate::game::menu::MenuScreen;
+use crate::game::menu::notification::Notification;
 use crate::game::transition::{Transition, TransitionStyle};
+use crate::webgl::audio::Audio;
 use crate::webgl::shader_program::ShaderProgram;
 
-pub type ActionTuple = (for<'a> fn(&'a mut BattleState) -> f64, for<'a> fn(&'a mut BattleState, f64));
+pub type ActionTuple = (for<'a, 'b> fn(&'a mut BattleState, &'b mut Notification) -> f64, for<'a> fn(&'a mut BattleState, f64));
 
 pub struct Battle {
+  soundtrack_file: String,
   battle_menu: MenuScreen,
   enemies: Vec<Vec<Enemy>>,
   active_turns: Vec<usize>,
@@ -26,16 +29,10 @@ pub struct Battle {
   print_damage: PrintDamage
 }
 
-use wasm_bindgen::prelude::*;
-#[wasm_bindgen]
-extern "C" {
-  #[wasm_bindgen(js_namespace = console)]
-  fn log(s: &str);
-}
-
 impl Battle {
   pub fn new() -> Self {
     Self {
+      soundtrack_file: String::from("battle_test_theme"),
       battle_menu: battle_menus::none_menu(),
       enemies: vec![Vec::new()],
       active_turns: Vec::new(),
@@ -46,10 +43,11 @@ impl Battle {
     }
   }
 
-  pub fn update(&mut self, party: &mut Vec<Character>, transition: &mut Transition) {
+  pub fn update(&mut self, audio: &mut Audio, party: &mut Vec<Character>, transition: &mut Transition, notification: &mut Notification) {
+    audio.update(&self.soundtrack_file);
     self.start_turn(party);
     if self.battle_menu.is_open() {
-      self.battle_menu.update(party, &mut self.enemies, transition);
+      self.battle_menu.update(party, &mut self.enemies, transition, notification);
     } else {
       for character in party.iter_mut() {
         if character.is_atb_full() {
@@ -63,22 +61,22 @@ impl Battle {
       }
     }
     for character in party.iter_mut() {
-      let turn_done = character.update(&mut self.battle_menu, &mut self.print_damage);
+      let turn_done = character.update(audio, &mut self.battle_menu, &mut self.print_damage);
       if turn_done {
         self.current_turn = 0;
       }
     }
-    let possible_battle_script = self.handle_enemy_updates();
+    let possible_battle_script = self.handle_enemy_updates(audio);
     if let Some(battle_script) = possible_battle_script {
-      battle_script(party, &mut self.enemies);
+      battle_script(party, &mut self.enemies, notification);
     }
     self.print_damage.update();
   }
 
-  pub fn handle_enemy_updates(&mut self) -> Option<for<'a, 'b> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>)> {
+  pub fn handle_enemy_updates(&mut self, audio: &mut Audio) -> Option<BattleScript> {
     for (j, enemy_row) in self.enemies.iter_mut().enumerate() {
       for (i, enemy) in enemy_row.iter_mut().enumerate() {
-        let turn_progression_value = enemy.update(700. + i as f32 * 100., 180. + j as f32 * 100., &mut self.print_damage);
+        let turn_progression_value = enemy.update(audio, 700. + i as f32 * 100., 180. + j as f32 * 100., &mut self.print_damage);
         match turn_progression_value {
           1 => return Some(enemy.get_battle_script()),
           2 => self.current_turn = 0,

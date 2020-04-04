@@ -13,7 +13,7 @@ pub fn title_menu() -> MenuScreen {
   let selectables = vec![
     vec![MenuItem::new(String::from("New Game"),   476., 400., OnClickEvent::None)],
     vec![MenuItem::new(String::from("Continue"),   476., 432., OnClickEvent::None)],
-    vec![MenuItem::new(String::from("Debug room"), 452., 464., OnClickEvent::ChangeScene(to_debug_room))]
+    vec![MenuItem::new(String::from("Debug room"), 456., 464., OnClickEvent::ChangeScene(to_debug_room))]
   ];
   MenuScreen::new(Vec::new(), selectables, Vec::new(), 0, 2, OnClickEvent::None)
 }

@@ -31,12 +31,6 @@ impl Textbox {
     }
   }
 
-  pub fn set_textbox(&mut self, name: String, text: String) {
-    self.open = true;
-    self.name = name;
-    self.texts = vec![text];
-  }
-
   pub fn set_textboxes(&mut self, name: String, texts: &Vec<String>) {
     self.open = true;
     self.name = name;

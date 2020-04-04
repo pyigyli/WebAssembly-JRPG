@@ -6,6 +6,7 @@ pub mod textbox;
 
 use container::MenuContainer;
 use item::{match_click_event, MenuItem, OnClickEvent};
+use notification::Notification;
 use crate::game::battle::character::Character;
 use crate::game::battle::enemy::Enemy;
 use crate::game::transition::Transition;
@@ -40,14 +41,14 @@ impl MenuScreen {
     }
   }
 
-  pub fn update(&mut self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition) {
+  pub fn update(&mut self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition, notification: &mut Notification) {
     if is_pressed("a") {
-      let possible_new_menu = self.selectables[self.cursor_y][self.cursor_x].click_item(party, enemies, transition);
+      let possible_new_menu = self.selectables[self.cursor_y][self.cursor_x].click_item(party, enemies, transition, notification);
       if let Some(new_menu) = possible_new_menu {
         self.set_menu(new_menu);
       }
     } else if is_pressed("s") {
-      self.perform_return_action(party, enemies, transition);
+      self.perform_return_action(party, enemies, transition, notification);
 
     } else if is_pressed("up") {
       self.cursor_y = self.cursor_y.checked_sub(1).unwrap_or(0);
@@ -67,8 +68,8 @@ impl MenuScreen {
     *self = new_menu;
   }
 
-  pub fn perform_return_action(&mut self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition) {
-    let possible_new_menu = match_click_event(&self.return_action, party, enemies, transition);
+  pub fn perform_return_action(&mut self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition, notification: &mut Notification) {
+    let possible_new_menu = match_click_event(&self.return_action, party, enemies, transition, notification);
     if let Some(new_menu) = possible_new_menu {
       self.set_menu(new_menu);
     }

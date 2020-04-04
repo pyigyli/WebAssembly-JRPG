@@ -7,6 +7,7 @@ use npc::Npc;
 use tile::Tile;
 use tilegrid::TileGrid;
 use crate::game::battle::enemy::Enemy;
+use crate::webgl::audio::Audio;
 use crate::webgl::shader_program::ShaderProgram;
 use js_sys::Math::random;
 
@@ -44,7 +45,8 @@ impl Map {
     }
   }
 
-  pub fn update(&mut self) {
+  pub fn update(&mut self, audio: &mut Audio) {
+    audio.update(&self.soundtrack_file);
     for npc in self.npcs.iter_mut() {
       npc.update(&mut self.tiles);
     }

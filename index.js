@@ -21,10 +21,8 @@ rust.then(m => {
   const audios = document.getElementsByTagName('audio');
   for (let i = 0; i < audios.length; i++) {
     if (audios.item(i).src.includes('soundtracks')) {
-      // gameClient.add_soundtrack(audios.item(i).src.split('resources/audio/soundtracks')[1].split('.mp3')[0], audios.item(i));
       gameClient.add_soundtrack(audios.item(i));
     } else {
-      // gameClient.add_sfx(audios.item(i).src.split('resources/audio/sfx')[1].split('.mp3')[0], audios.item(i));
       gameClient.add_sfx(audios.item(i));
     }
   }
