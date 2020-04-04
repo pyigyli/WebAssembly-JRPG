@@ -14,8 +14,19 @@ rust.then(m => {
   const gameClient = new m.GameClient();
 
   const sprites = document.getElementsByTagName('img');
-  for (let i = 0; i < document.getElementsByTagName('img').length; i++) {
+  for (let i = 0; i < sprites.length; i++) {
     gameClient.add_sprite(sprites.item(i).src.split('resources/')[1].split('.png')[0], sprites.item(i));
+  }
+
+  const audios = document.getElementsByTagName('audio');
+  for (let i = 0; i < audios.length; i++) {
+    if (audios.item(i).src.includes('soundtracks')) {
+      // gameClient.add_soundtrack(audios.item(i).src.split('resources/audio/soundtracks')[1].split('.mp3')[0], audios.item(i));
+      gameClient.add_soundtrack(audios.item(i));
+    } else {
+      // gameClient.add_sfx(audios.item(i).src.split('resources/audio/sfx')[1].split('.mp3')[0], audios.item(i));
+      gameClient.add_sfx(audios.item(i));
+    }
   }
 
   function render() {

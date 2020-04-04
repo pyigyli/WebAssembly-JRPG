@@ -1,4 +1,7 @@
 use crate::game::battle::Battle;
+use crate::game::data::menus;
+use crate::game::map::Map;
+use crate::game::map::player::Player;
 use crate::game::menu::MenuScreen;
 use crate::webgl::shader_program::ShaderProgram;
 
@@ -7,7 +10,8 @@ pub enum TransitionStyle {
   WhiteIn,
   BlackIn,
   BattleIn,
-  MenuIn(for<'r> fn() -> MenuScreen),
+  MenuIn(fn() -> MenuScreen),
+  ChangeScene(for<'a> fn(&'a mut Player) -> Map),
   WhiteOut,
   BlackOut
 }
@@ -29,7 +33,7 @@ impl Transition {
     self.style = transition;
   }
 
-  pub fn update(&mut self, battle: &mut Battle, menu: &mut MenuScreen) {
+  pub fn update(&mut self, map: &mut Map, player: &mut Player, battle: &mut Battle, menu: &mut MenuScreen) {
     match self.style {
       TransitionStyle::None => (),
       TransitionStyle::WhiteIn | TransitionStyle::BlackIn => {
@@ -53,6 +57,14 @@ impl Transition {
         self.opacity = ((self.opacity + 0.3) * 0.9).min(1.);
         if self.opacity == 1. {
           menu.set_menu(get_new_menu_function());
+          self.set(TransitionStyle::BlackOut);
+        }
+      },
+      TransitionStyle::ChangeScene(get_new_map_function) => {
+        self.opacity = ((self.opacity + 0.3) * 0.9).min(1.);
+        if self.opacity == 1. {
+          menu.set_menu(menus::none_menu());
+          map.set_map(get_new_map_function(player));
           self.set(TransitionStyle::BlackOut);
         }
       },

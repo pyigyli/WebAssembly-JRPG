@@ -75,7 +75,7 @@ impl MenuScreen {
   }
 
   pub fn is_open(&self) -> bool {
-    self.containers.len() > 0
+    self.containers.len() > 0 || self.selectables.len() > 0 || self.unselectables.len() > 0
   }
 
   pub fn draw(&self, program: &mut ShaderProgram) {

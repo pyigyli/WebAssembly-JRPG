@@ -5,10 +5,22 @@ use crate::game::data::npcs;
 use crate::game::map::Map;
 use crate::game::map::player::Player;
 
-pub fn test_map(player: &mut Player) -> Map {
+pub fn none_map(player: &mut Player) -> Map {
+  player.set(0, 0, Direction::Down);
+  Map::new(
+    String::new(),
+    String::new(),
+    Vec::new(),
+    Vec::new(),
+    |_rng_value: f64| -> Option<Vec<Vec<Enemy>>> {None}
+  )
+}
+
+pub fn debug_room(player: &mut Player) -> Map {
   player.set(3, 3, Direction::Down);
   Map::new(
     String::from("test_map"),
+    String::from("test_room_map"),
     vec![
       vec![("up_left_border",   true), ("up_border",      true ), ("up_border",   true ), ("up_border",      true ), ("up_border",   true ), ("up_border",      true ), ("up_right_border",   true)],
       vec![("left_border",      true), ("floor_decour_1", false), ("floor",       false), ("floor",          false), ("floor",       false), ("floor_decour_2", false), ("right_border",      true)],

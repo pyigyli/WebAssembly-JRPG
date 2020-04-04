@@ -13,6 +13,7 @@ use menu::MenuScreen;
 use menu::notification::Notification;
 use menu::textbox::Textbox;
 use transition::{Transition, TransitionStyle};
+use crate::webgl::audio::Audio;
 use crate::webgl::keyboard::is_down;
 use crate::webgl::shader_program::ShaderProgram;
 
@@ -33,8 +34,8 @@ impl GameState {
     let mut player = Player::new();
     player.set_character_sprites(String::from("Darrel_Deen"));
     Self {
-      menu: data::menus::none_menu(),
-      map: data::maps::test_map(&mut player),
+      menu: data::menus::title_menu(),
+      map: data::maps::none_map(&mut player),
       player,
       party: vec![data::characters::darrel_deen(1), data::characters::nurse_seraphine(2), data::characters::darrel_deen(3), data::characters::nurse_seraphine(4)],
       reserves: Vec::new(),
@@ -45,9 +46,9 @@ impl GameState {
     }
   }
 
-  pub fn update(&mut self) {
+  pub fn update(&mut self, audio: &mut Audio) {
     if self.transition.is_transitioning() {
-      self.transition.update(&mut self.battle, &mut self.menu);
+      self.transition.update(&mut self.map, &mut self.player, &mut self.battle, &mut self.menu);
 
     } else if self.menu.is_open() {
       self.menu.update(&mut self.party, self.battle.get_enemies(), &mut self.transition);

@@ -1,10 +1,21 @@
+use crate::game::data::maps;
 use crate::game::menu::container::MenuContainer;
 use crate::game::menu::item::{MenuItem, OnClickEvent};
 use crate::game::menu::MenuScreen;
 use crate::game::transition::{Transition, TransitionStyle};
 
 pub fn none_menu() -> MenuScreen {
-  MenuScreen::new(Vec::new(), vec![Vec::new()], Vec::new(), 0, 0, OnClickEvent::MenuTransition(|_transition: &mut Transition| ()))
+  MenuScreen::new(Vec::new(), Vec::new(), Vec::new(), 0, 0, OnClickEvent::MenuTransition(|_transition: &mut Transition| ()))
+}
+
+pub fn title_menu() -> MenuScreen {
+  let to_debug_room = |transition: &mut Transition| transition.set(TransitionStyle::ChangeScene(maps::debug_room));
+  let selectables = vec![
+    vec![MenuItem::new(String::from("New Game"),   476., 400., OnClickEvent::None)],
+    vec![MenuItem::new(String::from("Continue"),   476., 432., OnClickEvent::None)],
+    vec![MenuItem::new(String::from("Debug room"), 452., 464., OnClickEvent::ChangeScene(to_debug_room))]
+  ];
+  MenuScreen::new(Vec::new(), selectables, Vec::new(), 0, 2, OnClickEvent::None)
 }
 
 pub fn main_menu() -> MenuScreen {

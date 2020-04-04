@@ -1,5 +1,7 @@
+use crate::game::battle::enemy::Enemy;
 use crate::game::animation::{Animation, Direction};
 use crate::game::animation::character::CharacterAnimation;
+use crate::game::battle::ActionTuple;
 use crate::game::battle::print_damage::PrintDamage;
 use crate::game::battle::state::BattleState;
 use crate::game::data::battle_menus;
@@ -14,9 +16,9 @@ pub struct Character {
   x: f32,
   y: f32,
   state: BattleState,
-  attack_ability: (String, OnClickEvent),
-  primary_ability: (String, OnClickEvent),
-  secondary_ability: (String, OnClickEvent)
+  attack_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
+  primary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
+  secondary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple)
 }
 
 impl Character {
@@ -33,9 +35,9 @@ impl Character {
     int: f64, int_growth_rate: f32,
     res: f64, res_growth_rate: f32,
     agi: f64, agi_growth_rate: f32,
-    attack_ability: (String, OnClickEvent),
-    primary_ability: (String, OnClickEvent),
-    secondary_ability: (String, OnClickEvent)
+    attack_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
+    primary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
+    secondary_ability: (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple)
   ) -> Self {
     Self {
       animation: CharacterAnimation::new(sprite_folder),
@@ -144,7 +146,8 @@ impl Character {
   }
 
   pub fn get_attack_ability_as_menuitem(&self) -> MenuItem {
-    MenuItem::new(self.attack_ability.0.to_owned(), 70., 468., self.attack_ability.1.clone())
+    let on_click = OnClickEvent::ToTargetSelection(self.attack_ability.1, self.attack_ability.2);
+    MenuItem::new(self.attack_ability.0.to_owned(), 70., 468., on_click)
   }
 
   pub fn get_primary_ability_as_menuitem(&self) -> MenuItem {

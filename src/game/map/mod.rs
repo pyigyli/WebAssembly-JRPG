@@ -11,6 +11,7 @@ use crate::webgl::shader_program::ShaderProgram;
 use js_sys::Math::random;
 
 pub struct Map {
+  soundtrack_file: String,
   tiles:  TileGrid,
   npcs: Vec<Npc>,
   encounter_function: fn(f64) -> Option<Vec<Vec<Enemy>>>
@@ -19,6 +20,7 @@ pub struct Map {
 impl Map {
   pub fn new(
     tileset_folder: String,
+    soundtrack_file: String,
     tile_keys_and_blocks: Vec<Vec<(&str, bool)>>,
     npcs: Vec<Npc>,
     encounter_function: fn(f64) -> Option<Vec<Vec<Enemy>>>
@@ -35,6 +37,7 @@ impl Map {
       tiles[npc.get_y()][npc.get_x()].set_occupied();
     }
     Self {
+      soundtrack_file,
       tiles: TileGrid::new(tiles),
       npcs,
       encounter_function
@@ -45,6 +48,10 @@ impl Map {
     for npc in self.npcs.iter_mut() {
       npc.update(&mut self.tiles);
     }
+  }
+
+  pub fn set_map(&mut self, new_map: Map) {
+    *self = new_map;
   }
   
   pub fn get_encounter(&self) -> Option<Vec<Vec<Enemy>>> {

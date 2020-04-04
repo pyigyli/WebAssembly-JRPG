@@ -9,12 +9,12 @@ use crate::webgl::shader_program::ShaderProgram;
 
 type ActionTuple = (for<'a> fn(&'a mut BattleState) -> f64, for<'a> fn(&'a mut BattleState, f64));
 
-#[derive(Clone)]
 pub enum OnClickEvent {
   MenuTransition(for<'a> fn(&'a mut Transition)),
   SetBattleMenu(for<'a> fn(&'a Character) -> MenuScreen),
-  ToTargetSelection(for<'a, 'b> fn(&'a Vec<Character>, &'b mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
+  ToTargetSelection(for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
   BattleAction(for<'a, 'b> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>, Vec<usize>, ActionTuple), Vec<usize>, ActionTuple),
+  ChangeScene(for<'a> fn(&'a mut Transition)),
   None
 }
 
@@ -29,6 +29,7 @@ pub fn match_click_event(event: &OnClickEvent, party: &mut Vec<Character>, enemi
       action(party, enemies, target_ids.to_vec(), *action_effects);
       return Some(battle_menus::none_menu());
     },
+    OnClickEvent::ChangeScene(to_new_map) => to_new_map(transition),
     OnClickEvent::None => ()
   };
   None

@@ -1,3 +1,4 @@
+pub mod audio;
 pub mod gl_setup;
 pub mod keyboard;
 pub mod shader_program;

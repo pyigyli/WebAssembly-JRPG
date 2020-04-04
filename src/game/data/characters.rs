@@ -1,6 +1,5 @@
 use crate::game::battle::character::Character;
 use crate::game::data::{battle_actions, battle_menus};
-use crate::game::menu::item::OnClickEvent;
 
 pub fn darrel_deen(id: usize) -> Character {
   Character::new(
@@ -16,9 +15,9 @@ pub fn darrel_deen(id: usize) -> Character {
     3.,  0.75, // Intelligence
     7.,  1.,   // Resistance
     10., 1.1,  // Agility
-    (String::from("Attack"), OnClickEvent::ToTargetSelection(battle_menus::single_target_targeting_everyone, battle_actions::physical_attack())),
-    (String::from("Steal"),  OnClickEvent::None),
-    (String::from("Flee"),   OnClickEvent::None)
+    (String::from("Attack"), battle_menus::single_target_targeting_everyone, battle_actions::physical_attack()),
+    (String::from("Steal"),  battle_menus::single_target_targeting_everyone, battle_actions::physical_attack()),
+    (String::from("Flee"),   battle_menus::single_target_targeting_everyone, battle_actions::physical_attack())
   )
 }
 
@@ -36,8 +35,8 @@ pub fn nurse_seraphine(id: usize) -> Character {
     7.,  1.5,  // Intelligence
     8.,  1.05, // Resistance
     8.,  0.9,  // Agility
-    (String::from("Attack"),   OnClickEvent::ToTargetSelection(battle_menus::single_target_targeting_everyone, battle_actions::physical_attack())),
-    (String::from("Medicine"), OnClickEvent::None),
-    (String::from("Seduce"),   OnClickEvent::None)
+    (String::from("Attack"),   battle_menus::single_target_targeting_everyone, battle_actions::physical_attack()),
+    (String::from("Medicine"), battle_menus::single_target_targeting_everyone, battle_actions::physical_attack()),
+    (String::from("Seduce"),   battle_menus::single_target_targeting_everyone, battle_actions::physical_attack())
   )
 }

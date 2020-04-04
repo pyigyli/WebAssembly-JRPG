@@ -6,7 +6,7 @@ use crate::game::menu::item::{MenuItem, OnClickEvent};
 use crate::game::menu::MenuScreen;
 
 pub fn none_menu() -> MenuScreen {
-  MenuScreen::new(Vec::new(), vec![Vec::new()], Vec::new(), 0, 0, OnClickEvent::None)
+  MenuScreen::new(Vec::new(), Vec::new(), Vec::new(), 0, 0, OnClickEvent::None)
 }
 
 pub fn main_battle_menu(character_in_turn: &Character) -> MenuScreen {
