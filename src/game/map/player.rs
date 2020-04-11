@@ -79,19 +79,18 @@ impl Player {
       Direction::Right => self.x_sub += 8.
     };
     if animation_finished {
+      self.can_walk = true;
+      self.x_sub = 0.;
+      self.y_sub = 0.;
+      map.set_unoccupied(self.x, self.y);
+      match self.direction {
+        Direction::Up    => self.y -= 1,
+        Direction::Down  => self.y += 1,
+        Direction::Left  => self.x -= 1,
+        Direction::Right => self.x += 1
+      };
       if let Some(enemies) = map.get_encounter() {
         battle.start_battle(party, enemies, transition);
-      } else {
-        self.can_walk = true;
-        self.x_sub = 0.;
-        self.y_sub = 0.;
-        map.set_unoccupied(self.x, self.y);
-        match self.direction {
-          Direction::Up    => self.y -= 1,
-          Direction::Down  => self.y += 1,
-          Direction::Left  => self.x -= 1,
-          Direction::Right => self.x += 1
-        };
       }
     }
   }

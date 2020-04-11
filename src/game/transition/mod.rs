@@ -1,4 +1,5 @@
 use crate::game::battle::Battle;
+use crate::game::battle::character::Character;
 use crate::game::data::menus;
 use crate::game::map::Map;
 use crate::game::map::player::Player;
@@ -10,7 +11,9 @@ pub enum TransitionStyle {
   WhiteIn,
   BlackIn,
   BattleIn,
-  MenuIn(fn() -> MenuScreen),
+  BattleOut,
+  BattleEndScreen(for<'a> fn(&'a mut Vec<Character>, u32) -> MenuScreen, u32),
+  MenuIn(for<'a> fn(&'a mut Vec<Character>) -> MenuScreen),
   ChangeScene(for<'a> fn(&'a mut Player) -> Map),
   WhiteOut,
   BlackOut
@@ -33,7 +36,7 @@ impl Transition {
     self.style = transition;
   }
 
-  pub fn update(&mut self, map: &mut Map, player: &mut Player, battle: &mut Battle, menu: &mut MenuScreen) {
+  pub fn update(&mut self, map: &mut Map, player: &mut Player, party: &mut Vec<Character>, battle: &mut Battle, menu: &mut MenuScreen) {
     match self.style {
       TransitionStyle::None => (),
       TransitionStyle::WhiteIn | TransitionStyle::BlackIn => {
@@ -49,21 +52,36 @@ impl Transition {
       TransitionStyle::BattleIn => {
         self.opacity = ((self.opacity + 0.3) * 0.9).min(1.);
         if self.opacity == 1. {
-          battle.set_in_battle();
+          battle.set_fighting_state(true);
+          self.set(TransitionStyle::BlackOut);
+        }
+      },
+      TransitionStyle::BattleOut => {
+        self.opacity = ((self.opacity + 0.3) * 0.9).min(1.);
+        if self.opacity == 1. {
+          menu.set_menu(menus::none_menu(party));
+          battle.set_fighting_state(false);
+          self.set(TransitionStyle::BlackOut);
+        }
+      },
+      TransitionStyle::BattleEndScreen(get_new_menu_function, experience) => {
+        self.opacity = ((self.opacity + 0.3) * 0.9).min(1.);
+        if self.opacity == 1. {
+          menu.set_menu(get_new_menu_function(party, experience));
           self.set(TransitionStyle::BlackOut);
         }
       },
       TransitionStyle::MenuIn(get_new_menu_function) => {
         self.opacity = ((self.opacity + 0.3) * 0.9).min(1.);
         if self.opacity == 1. {
-          menu.set_menu(get_new_menu_function());
+          menu.set_menu(get_new_menu_function(party));
           self.set(TransitionStyle::BlackOut);
         }
       },
       TransitionStyle::ChangeScene(get_new_map_function) => {
         self.opacity = ((self.opacity + 0.3) * 0.9).min(1.);
         if self.opacity == 1. {
-          menu.set_menu(menus::none_menu());
+          menu.set_menu(menus::none_menu(party));
           map.set_map(get_new_map_function(player));
           self.set(TransitionStyle::BlackOut);
         }

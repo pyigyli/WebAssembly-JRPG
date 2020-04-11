@@ -13,6 +13,7 @@ pub struct Enemy {
   animation: EnemyAnimation,
   name: String,
   id: usize,
+  experience: u32,
   state: BattleState,
   battle_script: BattleScript
 }
@@ -22,7 +23,8 @@ impl Enemy {
     sprite_key: String,
     name: String,
     id: usize,
-    level: u16,
+    experience: u32,
+    level: u32,
     hp:  u16,
     mp:  u16,
     att: f64,
@@ -37,6 +39,7 @@ impl Enemy {
       animation: EnemyAnimation::new(sprite_key),
       name,
       id,
+      experience,
       state: BattleState::new(level, hp, 1., mp, 1., att, 1., def, 1., mag, 1., int, 1., res, 1., agi, 1.),
       battle_script
     }
@@ -52,7 +55,12 @@ impl Enemy {
             self.get_battle_state_mut().end_turn();
             return 2;
           },
-          _ => ()
+          Animation::Dead => return 3,
+          _ => {
+            if self.get_battle_state().get_hp() == 0 {
+              self.animation.start_animation(Animation::Dead);
+            }
+          }
         };
       } else {
         match self.animation.get_current_animation() {
@@ -94,6 +102,10 @@ impl Enemy {
 
   pub fn get_id(&self) -> usize {
     self.id
+  }
+
+  pub fn get_experience(&self) -> u32 {
+    self.experience
   }
 
   pub fn get_battle_state(&self) -> &BattleState {

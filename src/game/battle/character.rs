@@ -29,7 +29,7 @@ impl Character {
     name: String,
     sprite_folder: String,
     id: usize, 
-    level: u16,
+    level: u32,
     hp:  u16, hp_growth_rate:  f32,
     mp:  u16, mp_growth_rate:  f32,
     att: f64, att_growth_rate: f32,
@@ -79,6 +79,7 @@ impl Character {
           Animation::Attack | Animation::HurtSelf(_, _) => {
             self.animation.start_animation(Animation::EndTurn);
           },
+          Animation::Victory => return true,
           _ => ()
         }
       } else {
@@ -131,8 +132,18 @@ impl Character {
     }
   }
 
+  pub fn battle_won(&mut self) {
+    if self.get_battle_state().get_hp() > 0 {
+      self.animation.start_animation(Animation::Victory);
+    }
+  }
+
   pub fn is_atb_full(&self) -> bool {
     self.state.is_atb_full()
+  }
+
+  pub fn get_name(&self) -> String {
+    self.name.to_owned()
   }
 
   pub fn get_id(&self) -> usize {

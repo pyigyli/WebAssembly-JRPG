@@ -42,7 +42,7 @@ impl PrintDamage {
 
   pub fn draw(&self, program: &mut ShaderProgram) {
     if self.show_time_left > 0. {
-      for (index, character) in format!("{}", self.value).chars().enumerate() {
+      for (index, character) in self.value.to_string().chars().enumerate() {
         let sprite_key = match character {
           '0' => "0",
           '1' => "1",

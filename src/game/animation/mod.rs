@@ -16,6 +16,7 @@ pub enum Animation {
   Hurt(for<'a> fn(&'a mut BattleState, f64), f64),
   HurtSelf(for<'a> fn(&'a mut BattleState, f64), f64),
   Dead,
+  Victory,
   Flee,
   WalkTile(Direction),
   NpcWalkTile(Direction)

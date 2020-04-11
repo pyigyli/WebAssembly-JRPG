@@ -33,11 +33,12 @@ impl GameState {
   pub fn new() -> Self {
     let mut player = Player::new();
     player.set_character_sprites(String::from("Darrel_Deen"));
+    let mut party = vec![data::characters::darrel_deen(1), data::characters::nurse_seraphine(2), data::characters::darrel_deen(3), data::characters::nurse_seraphine(4)];
     Self {
-      menu: data::menus::title_menu(),
+      menu: data::menus::title_menu(&mut party),
       map: data::maps::none_map(&mut player),
       player,
-      party: vec![data::characters::darrel_deen(1), data::characters::nurse_seraphine(2), data::characters::darrel_deen(3), data::characters::nurse_seraphine(4)],
+      party,
       _reserves: Vec::new(),
       battle: Battle::new(),
       notification: Notification::new(),
@@ -48,12 +49,12 @@ impl GameState {
 
   pub fn update(&mut self, audio: &mut Audio) {
     if self.transition.is_transitioning() {
-      self.transition.update(&mut self.map, &mut self.player, &mut self.battle, &mut self.menu);
+      self.transition.update(&mut self.map, &mut self.player, &mut self.party, &mut self.battle, &mut self.menu);
 
     } else if self.menu.is_open() {
       self.menu.update(&mut self.party, self.battle.get_enemies(), &mut self.transition, &mut self.notification);
 
-    } else if self.battle.in_battle() {
+    } else if self.battle.is_in_battle() {
       self.battle.update(audio, &mut self.party, &mut self.transition, &mut self.notification);
 
     } else if is_down("f") {
@@ -73,7 +74,7 @@ impl GameState {
     if self.menu.is_open() {
       self.menu.draw(program);
 
-    } else if self.battle.in_battle() {
+    } else if self.battle.is_in_battle() {
       self.battle.draw(program, &self.party);
       
     } else {

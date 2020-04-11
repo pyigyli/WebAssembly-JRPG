@@ -2,7 +2,8 @@ use crate::game::menu::font::print_text;
 use crate::webgl::shader_program::ShaderProgram;
 
 pub struct BattleState {
-  level: u16,
+  level: u32,
+  experience: u32,
   hp: u16,
   hp_growth_rate: f32,
   mp: u16,
@@ -26,7 +27,7 @@ pub struct BattleState {
 
 impl BattleState {
   pub fn new(
-    level: u16,
+    level: u32,
     hp:  u16, hp_growth_rate:  f32,
     mp:  u16, mp_growth_rate:  f32,
     att: f64, att_growth_rate: f32,
@@ -38,6 +39,7 @@ impl BattleState {
   ) -> Self {
     Self {
       level,
+      experience: 0,
       hp,  hp_growth_rate,
       mp,  mp_growth_rate,
       att, att_growth_rate,
@@ -53,7 +55,9 @@ impl BattleState {
   }
 
   pub fn update(&mut self) {
-    self.update_atb();
+    if self.get_hp() > 0 {
+      self.update_atb();
+    }
   }
 
   pub fn update_atb(&mut self) {
@@ -79,11 +83,15 @@ impl BattleState {
     self.atb_subtick = 0.;
   }
 
-  pub fn reduce_hp(&mut self, value: u16) {
-    if let Some(new_hp) = self.hp.checked_sub(value) {
-      self.hp = new_hp;
-    } else {
-      self.hp = 0;
+  pub fn get_experience(&self) -> u32 {
+    self.experience
+  }
+
+  pub fn add_experience(&mut self, experience: u32) {
+    self.experience += experience;
+    while self.experience >= self.level * self.level * 150 - 100 {
+      self.experience -= self.level * self.level * 150 - 100;
+      self.level += 1;
     }
   }
 
@@ -93,6 +101,18 @@ impl BattleState {
 
   pub fn is_atb_full(&self) -> bool {
     self.atb == std::u8::MAX
+  }
+
+  pub fn get_hp(&self) -> u16 {
+    self.hp
+  }
+
+  pub fn reduce_hp(&mut self, value: u16) {
+    if let Some(new_hp) = self.hp.checked_sub(value) {
+      self.hp = new_hp;
+    } else {
+      self.hp = 0;
+    }
   }
 
   pub fn get_attack_stat(&self) -> f64 {

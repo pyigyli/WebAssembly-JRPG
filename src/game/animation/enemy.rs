@@ -26,7 +26,7 @@ impl EnemyAnimation {
       Animation::StartTurn      => self.remaining_frames = 12,
       Animation::EndTurn        => self.remaining_frames = 10,
       Animation::Attack         => self.remaining_frames = 40,
-      Animation::Hurt(_, _)     => self.remaining_frames = 60,
+      Animation::Hurt(_, _)     => self.remaining_frames = 40,
       Animation::HurtSelf(_, _) => self.remaining_frames = 24,
       Animation::Dead           => self.remaining_frames = 20,
       Animation::Flee           => self.remaining_frames = 80,
@@ -60,8 +60,11 @@ impl EnemyAnimation {
           }
         }
         return self.remaining_frames == 0;
-      }
-      Animation::Dead => return self.remaining_frames == 0,
+      },
+      Animation::Dead => {
+        self.opacity -= 0.05;
+        return self.remaining_frames == 0;
+      },
       Animation::Flee => return self.remaining_frames == 0,
       _ => true
     }

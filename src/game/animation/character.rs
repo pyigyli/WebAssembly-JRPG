@@ -47,6 +47,7 @@ impl CharacterAnimation {
       Animation::Hurt(_, _)     => self.remaining_frames = 40,
       Animation::HurtSelf(_, _) => self.remaining_frames = 24,
       Animation::Dead           => self.remaining_frames = 20,
+      Animation::Victory        => self.remaining_frames = 180,
       Animation::Flee           => self.remaining_frames = 80,
       Animation::WalkTile(_)    => self.remaining_frames = 8,
       Animation::NpcWalkTile(_) => self.remaining_frames = 32
@@ -91,6 +92,12 @@ impl CharacterAnimation {
       },
       Animation::Dead => {
         self.sprite = Sprite::Dead;
+        return self.remaining_frames == 0;
+      },
+      Animation::Victory => {
+        if self.remaining_frames == 120 {
+          self.sprite = Sprite::Victory;
+        }
         return self.remaining_frames == 0;
       },
       Animation::Flee => {

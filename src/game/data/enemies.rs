@@ -13,15 +13,16 @@ pub fn test_circle(id: usize) -> Enemy {
     String::from("test-circle"),
     String::from("Circle"),
     id,
-    1,   // Lvl
-    10,  // Hp
-    32,  // Mp
+    321, // Experience
+    1,   // Level
+    10,  // Health
+    32,  // Mana
     12., // Attack
     7.,  // Defence
     5.,  // Magic
     3.,  // Intelligence
     7.,  // Resistance
-    17.,  // Agility
+    3.,  // Agility
     |party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, notification: &mut Notification| {
       let action_effects = battle_actions::physical_attack();
       let acting_enemy = enemies.iter_mut().flatten().find(|enemy: &&mut Enemy| enemy.get_battle_state().is_turn_active()).unwrap();
