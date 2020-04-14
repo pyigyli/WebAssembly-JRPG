@@ -1,9 +1,11 @@
 use crate::game::battle::character::Character;
 use crate::game::data::maps;
 use crate::game::menu::container::MenuContainer;
-use crate::game::menu::item::{MenuItem, OnClickEvent};
+use crate::game::menu::click_event::OnClickEvent;
+use crate::game::menu::item::MenuItem;
 use crate::game::menu::{MenuMovement, MenuScreen};
 use crate::game::transition::{Transition, TransitionStyle};
+use crate::webgl::audio::Audio;
 
 pub fn none_menu(_party: &mut Vec<Character>) -> MenuScreen {
   MenuScreen::new(Vec::new(), Vec::new(), Vec::new(), MenuMovement::Grid, 0, 0, OnClickEvent::MenuTransition(|_transition: &mut Transition| ()))
@@ -43,15 +45,16 @@ pub fn item_menu(_party: &mut Vec<Character>) -> MenuScreen {
 }
 
 pub fn battle_won(party: &mut Vec<Character>, mut experience: u32) -> MenuScreen {
-  let start_exp_count = |menu: &mut MenuScreen, party: &mut Vec<Character>| {
+  let start_exp_count = |audio: &mut Audio, menu: &mut MenuScreen, party: &mut Vec<Character>| {
     
-    let finish_exp_count = |menu: &mut MenuScreen, party: &mut Vec<Character>| {
+    let finish_exp_count = |audio: &mut Audio, menu: &mut MenuScreen, party: &mut Vec<Character>| {
       let exp_left = menu.get_unselectable(1).get_text().parse::<u32>().unwrap();
-      let party_alive_count = party.iter().filter(|character: &&Character| character.get_battle_state().get_hp() > 0).count() as u32;
+      let alive_count = alive_members_count!(party);
       if exp_left > 0 {
+        audio.play_sfx("counter_tick");
         menu.get_unselectable(1).set_text(0.to_string());
-        for character in party.iter_mut().filter(|character: &&mut Character| character.get_battle_state().get_hp() > 0) {
-          character.get_battle_state_mut().add_experience(exp_left / party_alive_count);
+        for character in iter_alive_members!(party) {
+          character.get_battle_state_mut().add_experience(exp_left / alive_count);
           menu.get_unselectable(character.get_id() * 2 + 2).set_text(character.get_battle_state().get_experience().to_string());
         }
       } else {
@@ -62,16 +65,17 @@ pub fn battle_won(party: &mut Vec<Character>, mut experience: u32) -> MenuScreen
     };
 
     let exp_left = menu.get_unselectable(1).get_text().parse::<u32>().unwrap();
-    let party_alive_count = party.iter().filter(|character: &&Character| character.get_battle_state().get_hp() > 0).count() as u32;
+    let alive_count = alive_members_count!(party);
     if exp_left > 0 {
-      menu.get_unselectable(1).set_text(format!("{}", exp_left - party_alive_count));
-      for character in party.iter_mut().filter(|character: &&mut Character| character.get_battle_state().get_hp() > 0) {
+      audio.play_sfx("counter_tick");
+      menu.get_unselectable(1).set_text(format!("{}", exp_left - alive_count));
+      for character in iter_alive_members!(party) {
         character.get_battle_state_mut().add_experience(1);
         menu.get_unselectable(character.get_id() * 2 + 2).set_text(character.get_battle_state().get_experience().to_string());
       }
       menu.get_selectable(0, 0).set_click_event(OnClickEvent::MutateMenu(finish_exp_count));
     } else {
-      finish_exp_count(menu, party);
+      finish_exp_count(audio, menu, party);
     }
   };
   let containers = vec![
@@ -81,9 +85,9 @@ pub fn battle_won(party: &mut Vec<Character>, mut experience: u32) -> MenuScreen
     MenuContainer::new(10.,  480., 1070., 600.),
     MenuContainer::new(760., 610., 1040., 710.)
   ];
-  let alive_members_count = party.iter().filter(|character: &&Character| character.get_battle_state().get_hp() > 0).count() as u32;
-  if experience % alive_members_count != 0 {
-    experience += alive_members_count - experience % alive_members_count;
+  let alive_count = alive_members_count!(party);
+  if experience % alive_count != 0 {
+    experience += alive_count - experience % alive_count;
   }
   let selectables = vec![vec![MenuItem::new(String::from("Continue"), 825., 650., OnClickEvent::MutateMenu(start_exp_count))]];
 

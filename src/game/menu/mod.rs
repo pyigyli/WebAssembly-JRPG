@@ -1,15 +1,18 @@
+pub mod click_event;
 pub mod container;
 pub mod font;
 pub mod item;
 pub mod notification;
 pub mod textbox;
 
+use click_event::{match_click_event, OnClickEvent, ClickEventReturnType};
 use container::MenuContainer;
-use item::{match_click_event, MenuItem, OnClickEvent, ClickEventReturnType};
+use item::MenuItem;
 use notification::Notification;
 use crate::game::battle::character::Character;
 use crate::game::battle::enemy::Enemy;
 use crate::game::transition::Transition;
+use crate::webgl::audio::Audio;
 use crate::webgl::keyboard::is_pressed;
 use crate::webgl::shader_program::ShaderProgram;
 
@@ -17,7 +20,7 @@ pub enum MenuMovement {
   Grid, ColumnOfRows, RowOfColumns
 }
 
-pub type MenuMutation = for<'a> fn(&mut MenuScreen, &'a mut Vec<Character>);
+pub type MenuMutation = for<'a, 'b, 'c> fn(&'a mut Audio, &'b mut MenuScreen, &'c mut Vec<Character>);
 
 pub struct MenuScreen {
   containers: Vec<MenuContainer>,
@@ -52,12 +55,15 @@ impl MenuScreen {
     }
   }
 
-  pub fn update(&mut self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition, notification: &mut Notification) {
+  pub fn update(&mut self, audio: &mut Audio, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition, notification: &mut Notification) {
     if is_pressed("a") {
+      if self.return_action.is_some() {
+        audio.play_sfx("menu_click");
+      }
       let click_event_return_type = self.selectables[self.cursor_y][self.cursor_x].click_item(party, enemies, transition, notification);
-      self.match_click_event_return_type(click_event_return_type)
+      self.match_click_event_return_type(click_event_return_type);
     } else if is_pressed("s") {
-      self.perform_return_action(party, enemies, transition, notification);
+      self.perform_return_action(audio, party, enemies, transition, notification);
     } else if is_pressed("up") {
       self.move_cursor_up();
     } else if is_pressed("down") {
@@ -68,7 +74,7 @@ impl MenuScreen {
       self.move_cursor_right();
     }
     if let Some(mutation_function) = &mut self.mutation {
-      mutation_function(self, party);
+      mutation_function(audio, self, party);
     }
   }
 
@@ -76,9 +82,19 @@ impl MenuScreen {
     *self = new_menu;
   }
 
-  pub fn perform_return_action(&mut self, party: &mut Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, transition: &mut Transition, notification: &mut Notification) {
+  pub fn perform_return_action(
+    &mut self,
+    audio: &mut Audio,
+    party: &mut Vec<Character>,
+    enemies: &mut Vec<Vec<Enemy>>,
+    transition: &mut Transition,
+    notification: &mut Notification
+  ) {
+    if self.return_action.is_some() {
+      audio.play_sfx("menu_click"); // Replace with return sound when available
+    }
     let click_event_return_type = match_click_event(&self.return_action, party, enemies, transition, notification);
-    self.match_click_event_return_type(click_event_return_type)
+    self.match_click_event_return_type(click_event_return_type);
   }
 
   pub fn start_mutation(&mut self, mutation_function: MenuMutation) {

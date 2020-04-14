@@ -1,8 +1,9 @@
 use crate::game::battle::ActionTuple;
 use crate::game::battle::character::Character;
 use crate::game::battle::enemy::Enemy;
+use crate::game::menu::click_event::OnClickEvent;
 use crate::game::menu::container::MenuContainer;
-use crate::game::menu::item::{MenuItem, OnClickEvent};
+use crate::game::menu::item::MenuItem;
 use crate::game::menu::{MenuMovement, MenuScreen};
 use crate::game::menu::notification::Notification;
 

@@ -51,7 +51,7 @@ impl Battle {
     audio.update(&self.soundtrack_file);
     self.start_turn(party);
     if self.battle_menu.is_open() {
-      self.battle_menu.update(party, &mut self.enemies, transition, notification);
+      self.battle_menu.update(audio, party, &mut self.enemies, transition, notification);
     } else {
       for character in party.iter_mut() {
         if character.is_atb_full() {
@@ -109,7 +109,7 @@ impl Battle {
           self.active_turns.clear();
           self.battle_menu.set_menu(battle_menus::none_menu());
 
-          for character in party.iter_mut().filter(|character: &&mut Character| character.get_battle_state().get_hp() > 0) {
+          for character in iter_alive_members!(party) {
             character.get_battle_state_mut().end_turn();
             if self.current_turn == 0 {
               // play victory audio
@@ -120,7 +120,7 @@ impl Battle {
         }
       },
       FightingState::Victory => {
-        for character in party.iter_mut().filter(|character: &&mut Character| character.get_battle_state().get_hp() > 0) {
+        for character in iter_alive_members!(party) {
           character.get_battle_state_mut().end_turn();
           let animation_done = character.update(audio, &mut self.battle_menu, &mut self.print_damage);
           if animation_done {

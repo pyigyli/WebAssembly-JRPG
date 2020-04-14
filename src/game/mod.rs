@@ -1,3 +1,5 @@
+#[macro_use]
+mod party_macros;
 mod animation;
 mod battle;
 mod data;
@@ -52,7 +54,7 @@ impl GameState {
       self.transition.update(&mut self.map, &mut self.player, &mut self.party, &mut self.battle, &mut self.menu);
 
     } else if self.menu.is_open() {
-      self.menu.update(&mut self.party, self.battle.get_enemies(), &mut self.transition, &mut self.notification);
+      self.menu.update(audio, &mut self.party, self.battle.get_enemies(), &mut self.transition, &mut self.notification);
 
     } else if self.battle.is_in_battle() {
       self.battle.update(audio, &mut self.party, &mut self.transition, &mut self.notification);
