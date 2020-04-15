@@ -13,6 +13,9 @@ rust.then(m => {
 
   const gameClient = new m.GameClient();
 
+  document.getElementById('soundtrackSlider').onchange = (event) => gameClient.set_soundtrack_volume(event.target.value / 10);
+  document.getElementById('sfxSlider').onchange = (event) => gameClient.set_sfx_volume(event.target.value / 10);
+
   const sprites = document.getElementsByTagName('img');
   for (let i = 0; i < sprites.length; i++) {
     gameClient.add_sprite(sprites.item(i).src.split('resources/')[1].split('.png')[0], sprites.item(i));

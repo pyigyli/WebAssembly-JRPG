@@ -13,12 +13,12 @@ use wasm_bindgen::prelude::*;
 use web_sys::*;
 use web_sys::WebGlRenderingContext as GL;
 
-// use wasm_bindgen::prelude::*;
-// #[wasm_bindgen]
-// extern "C" {
-//   #[wasm_bindgen(js_namespace = console)]
-//   fn log(s: &str);
-// }
+use wasm_bindgen::prelude::*;
+#[wasm_bindgen]
+extern "C" {
+  #[wasm_bindgen(js_namespace = console)]
+  fn log(s: &str);
+}
 
 #[wasm_bindgen]
 pub struct GameClient {
@@ -58,6 +58,14 @@ impl GameClient {
 
   pub fn add_sfx(&mut self, sfx: HtmlAudioElement) {
     self.audio.add_sfx(sfx);
+  }
+
+  pub fn set_soundtrack_volume(&mut self, value: f64) {
+    self.audio.set_soundtrack_volume(value);
+  }
+
+  pub fn set_sfx_volume(&mut self, value: f64) {
+    self.audio.set_sfx_volume(value);
   }
 
   pub fn render(&mut self) {
