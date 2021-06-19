@@ -2,6 +2,7 @@ use crate::game::battle::enemy::Enemy;
 use crate::game::animation::{Animation, Direction};
 use crate::game::animation::character::CharacterAnimation;
 use crate::game::battle::ActionTuple;
+use crate::game::battle::BattleActionTargetStart;
 use crate::game::battle::print_damage::PrintDamage;
 use crate::game::battle::state::BattleState;
 use crate::game::data::battle_menus;
@@ -11,7 +12,12 @@ use crate::game::menu::MenuScreen;
 use crate::webgl::audio::Audio;
 use crate::webgl::shader_program::ShaderProgram;
 
-type AbilityTuple = (String, for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple);
+type AbilityTuple = (
+  String,
+  for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple, BattleActionTargetStart) -> MenuScreen,
+  ActionTuple,
+  BattleActionTargetStart
+);
 
 pub struct Character {
   animation: CharacterAnimation,
@@ -164,7 +170,7 @@ impl Character {
   }
 
   pub fn get_attack_ability_as_menuitem(&self) -> MenuItem {
-    let on_click = OnClickEvent::ToTargetSelection(self.attack_ability.1, self.attack_ability.2);
+    let on_click = OnClickEvent::ToTargetSelection(self.attack_ability.1, self.attack_ability.2, self.attack_ability.3);
     MenuItem::new(self.attack_ability.0.to_owned(), 70., 468., on_click)
   }
 

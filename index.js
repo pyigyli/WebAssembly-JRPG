@@ -1,4 +1,4 @@
-const rust = import('./pkg/jrpg_wasm_engine');
+const rust = import('./pkg/index');
 const canvas = document.getElementById('rustCanvas');
 const gl = canvas.getContext('webgl', {antialias: true});
 

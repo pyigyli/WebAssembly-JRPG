@@ -13,7 +13,6 @@ use wasm_bindgen::prelude::*;
 use web_sys::*;
 use web_sys::WebGlRenderingContext as GL;
 
-use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 extern "C" {
   #[wasm_bindgen(js_namespace = console)]

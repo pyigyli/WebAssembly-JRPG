@@ -20,6 +20,11 @@ enum FightingState {
   Fighting, Victory, Flee, NotFighting
 }
 
+#[derive(Copy, Clone)]
+pub enum BattleActionTargetStart {
+  Enemies, Party, Myself
+}
+
 pub type ActionTuple = (for<'a, 'b> fn(&'a mut BattleState, &'b mut Notification) -> f64, for<'a> fn(&'a mut BattleState, f64));
 
 pub struct Battle {

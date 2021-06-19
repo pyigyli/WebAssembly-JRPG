@@ -1,4 +1,5 @@
 use crate::game::battle::ActionTuple;
+use crate::game::battle::BattleActionTargetStart;
 use crate::game::battle::character::Character;
 use crate::game::battle::enemy::Enemy;
 use crate::game::menu::click_event::OnClickEvent;
@@ -23,11 +24,28 @@ pub fn main_battle_menu(character_in_turn: &Character) -> MenuScreen {
   MenuScreen::new(vec![MenuContainer::new(16., 420., 250., 704.)], selectables, Vec::new(), MenuMovement::Grid, 0, 0, OnClickEvent::None)
 }
 
-pub fn single_target_targeting_everyone(party: &Vec<Character>, enemies: &mut Vec<Vec<Enemy>>, action_effects: ActionTuple) -> MenuScreen {
+pub fn single_target_targeting_everyone(
+  party: &Vec<Character>,
+  enemies: &mut Vec<Vec<Enemy>>,
+  action_effects: ActionTuple,
+  targeting_start_type: BattleActionTargetStart
+) -> MenuScreen {
   let mut selectables = Vec::new();
   push_party_to_selectables(&mut selectables, party, action_effects);
   push_enemies_to_selectables(&mut selectables, enemies, action_effects);
-  MenuScreen::new(vec![MenuContainer::new(16., 420., 250., 704.)], selectables, Vec::new(), MenuMovement::RowOfColumns, 0, 0, OnClickEvent::SetBattleMenu(main_battle_menu))
+  let (cursor_x_pos, cursor_y_pos) = match targeting_start_type {
+    BattleActionTargetStart::Enemies => (0, 1),
+    BattleActionTargetStart::Party => (0, 0),
+    BattleActionTargetStart::Myself => (get_character_in_turn!(party).unwrap().get_id(), 0)
+  };
+  MenuScreen::new(
+    vec![MenuContainer::new(16., 420., 250., 704.)],
+    selectables, Vec::new(),
+    MenuMovement::RowOfColumns,
+    cursor_x_pos,
+    cursor_y_pos,
+    OnClickEvent::SetBattleMenu(main_battle_menu)
+  )
 }
 
 fn push_party_to_selectables(selectables: &mut Vec<Vec<MenuItem>>, party: &Vec<Character>, action_effects: ActionTuple) {

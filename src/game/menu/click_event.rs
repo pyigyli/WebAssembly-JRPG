@@ -1,4 +1,5 @@
 use crate::game::battle::ActionTuple;
+use crate::game::battle::BattleActionTargetStart;
 use crate::game::battle::character::Character;
 use crate::game::battle::enemy::Enemy;
 use crate::game::data::battle_menus;
@@ -10,7 +11,13 @@ pub enum OnClickEvent {
   MenuTransition(for<'a> fn(&'a mut Transition)),
   MutateMenu(MenuMutation),
   SetBattleMenu(for<'a> fn(&'a Character) -> MenuScreen),
-  ToTargetSelection(for<'r, 's> fn(&'r Vec<Character>, &'s mut Vec<Vec<Enemy>>, ActionTuple) -> MenuScreen, ActionTuple),
+  ToTargetSelection(for<'r, 's> fn(
+    &'r Vec<Character>,
+    &'s mut Vec<Vec<Enemy>>,
+    ActionTuple, BattleActionTargetStart) -> MenuScreen,
+    ActionTuple,
+    BattleActionTargetStart
+  ),
   BattleAction(for<'a, 'b, 'c> fn(&'a mut Vec<Character>, &'b mut Vec<Vec<Enemy>>, Vec<usize>, ActionTuple, &'c mut Notification), Vec<usize>, ActionTuple),
   ChangeScene(for<'a> fn(&'a mut Transition)),
   None
@@ -44,7 +51,9 @@ pub fn match_click_event(
     OnClickEvent::SetBattleMenu(new_battle_menu) => return ClickEventReturnType::NewMenu(
       new_battle_menu(party.iter().find(|character: &&Character| character.get_battle_state().is_turn_active()).unwrap())
     ),
-    OnClickEvent::ToTargetSelection(to_target_selection, action_effects) => return ClickEventReturnType::NewMenu(to_target_selection(party, enemies, *action_effects)),
+    OnClickEvent::ToTargetSelection(to_target_selection, action_effects, targeting_start_type) => {
+      return ClickEventReturnType::NewMenu(to_target_selection(party, enemies, *action_effects, *targeting_start_type))
+    },
     OnClickEvent::BattleAction(action, target_ids, action_effects) => {
       action(party, enemies, target_ids.to_vec(), *action_effects, notification);
       return ClickEventReturnType::NewMenu(battle_menus::none_menu());

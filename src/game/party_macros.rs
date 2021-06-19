@@ -14,3 +14,9 @@ macro_rules! alive_members_count {
     })
   };
 }
+
+macro_rules! get_character_in_turn {
+  ($party:expr) => {
+    $party.iter().find(|&character| character.get_battle_state().is_turn_active())
+  };
+}
